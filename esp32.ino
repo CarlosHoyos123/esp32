@@ -43,18 +43,18 @@ void setup()
   pinMode(LED_BUILTIN, OUTPUT);
   Serial.begin(115200);
   while (!Serial);
-    
+  digitalWrite(LED_BUILTIN, HIGH);
   WiFi.begin(ssid, pass);
   
   while (WiFi.status() != WL_CONNECTED) 
   {
-    digitalWrite(LED_BUILTIN, HIGH);
+    digitalWrite(LED_BUILTIN, LOW);
   }
-  digitalWrite(LED_BUILTIN, LOW);
+  digitalWrite(LED_BUILTIN, HIGH);
 }
 
 void loop(){
-  if (Serial.available() > 0) {              //if (UNO.available() > 0){
+  if (Serial.available() > 0) {
     interpretIncome();
     delay(50);
   }
@@ -129,9 +129,8 @@ void interpretIncome(){
     insertFill();
   }
 }
-
-void Connect(){
 //---------------------------------------------------------------------Conectar a MySQL
+void Connect(){
   if (conn.connectNonBlocking(server, server_port, user, password) != RESULT_FAIL){
     delay(1000);
     Insert();
@@ -140,14 +139,11 @@ void Connect(){
   } 
   else{
     MYSQL_DISPLAY("\nConnect failed. Trying again on next iteration.");
-    vaciarSerial();
   }
-   //delay(60000);
-//---------------------------------------------------------------------Fin conectar a MySQL
 }
-
+//---------------------------------------------------------------------Fin conectar a MySQL
+//---------------------------------------------------------------------Ejecutar insert  
 void Insert(){
-  //---------------------------------------------------------------------Ejecutar insert  
   MySQL_Query query_mem = MySQL_Query(&conn);
 
   if (conn.connected()){
@@ -160,9 +156,9 @@ void Insert(){
   else{
     MYSQL_DISPLAY("Disconnected from Server. Can't insert.");
   }
-//---------------------------------------------------------------------Fin ejecutar insert
+  vaciarSerial();
 }
-
+//---------------------------------------------------------------------Fin ejecutar insert
 void vaciarSerial(){
   while (Serial.available() > 0)  Serial.read(); 
 }
@@ -170,4 +166,21 @@ void vaciarSerial(){
 void insertFill(){
 INSERT_SQL = String("INSERT INTO ") + default_database + "." + default_table 
                  + " (`FECHA`, `HORA`, `ENCARGADO`, `ENDOSCOPIO`, `LP`, `D1`, `D2`, `D3`, `D4`, `D5`, `D6`, `D7`, `PHJE`, `PHDES`, `NOVEDAD`, `SEDE`, `OPCIONAL1`) VALUES ('" + fec + "','" + hor + "','" + enc + "','" + equ + "','" + lim + "','" + d1 + "','" + d2 + "','" + d3 + "','" + d4 + "','" + d5 + "','" + d6 + "','" + d7 + "','" + je + "','" + des + "','" "','SEDE1','" "')";
+}
+
+void vaciarStructure(){
+  String  fec = "";
+  String  hor = "";
+  String  enc = "";
+  String  equ = "";
+  String  lim = "";
+  String  d1 = "";
+  String  d2 = "";
+  String  d3 = "";
+  String  d4 = "";
+  String  d5 = "";
+  String  d6 = "";
+  String  d7 = "";
+  String  je = "";
+  String  des = "";
 }
