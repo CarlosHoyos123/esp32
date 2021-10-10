@@ -18,12 +18,27 @@ uint16_t server_port = 3306;
 char default_database[] = "u990593344_FASE1";
 char default_table[]    = "REGISTROS";
 //---------------------------------------------------------------------fin de Base de datos, tabla y puerto
+//---------------------------------------------------------------------Variables para almacenar parametros
+String  col2  = "";
+String  col3  = "";
+String  col4  = "";
+String  col5  = "";
+String  col6  = "";
+String  col7  = "";
+String  col8  = "";
+String  col9  = "";
+String  col10 = "";
+String  col11 = "";
+String  col12 = "";
+String  col13 = "";
+String  col14 = "";
+String  col15 = "";
+//---------------------------------------------------------------------Fin variables para almacenar parametros
 //---------------------------------------------------------------------Fin muestra de insert Basico
 String default_value    = "Hello, Arduino!"; 
 String INSERT_SQL = String("INSERT INTO ") + default_database + "." + default_table 
-                 + " (OPCIONAL1) VALUES ('" + default_value + "')";
+                 + " (`FECHA`, `HORA`, `ENCARGADO`, `ENDOSCOPIO`, `LP`, `D1`, `D2`, `D3`, `D4`, `D5`, `D6`, `D7`, `PHJE`, `PHDES`, `NOVEDAD`, `SEDE`, `OPCIONAL1`) VALUES ('" + col5 + "','" + col4 + "','" + col2 + "','" + col3 + "','" + col6 + "','" + col7 + "','" + col8 + "','" + col9 + "','" + col10 + "','" + col11 + "','" + col12 + "','" + col13 + "','" + col14 + "','" + col15 + "','" "','SEDE1','" "')";
 //---------------------------------------------------------------------Fin muestra de insert Basico
-
 MySQL_Connection conn((Client *)&client);
 MySQL_Query *query_mem;
 
