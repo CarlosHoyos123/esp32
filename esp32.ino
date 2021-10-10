@@ -19,26 +19,22 @@ char default_database[] = "u990593344_FASE1";
 char default_table[]    = "REGISTROS";
 //---------------------------------------------------------------------fin de Base de datos, tabla y puerto
 //---------------------------------------------------------------------Variables para almacenar parametros
-String  col2  = "";
-String  col3  = "";
-String  col4  = "";
-String  col5  = "";
-String  col6  = "";
-String  col7  = "";
-String  col8  = "";
-String  col9  = "";
-String  col10 = "";
-String  col11 = "";
-String  col12 = "";
-String  col13 = "";
-String  col14 = "";
-String  col15 = "";
+String  fec  = "";
+String  hor  = "";
+String  enc  = "";
+String  equ  = "";
+String  lim  = "";
+String  d1  = "";
+String  d2  = "";
+String  d3  = "";
+String  d4 = "";
+String  d5 = "";
+String  d6 = "";
+String  d7 = "";
+String  je = "";
+String  des = "";
+String INSERT_SQL;
 //---------------------------------------------------------------------Fin variables para almacenar parametros
-//---------------------------------------------------------------------Fin muestra de insert Basico
-String default_value    = "Hello, Arduino!"; 
-String INSERT_SQL = String("INSERT INTO ") + default_database + "." + default_table 
-                 + " (`FECHA`, `HORA`, `ENCARGADO`, `ENDOSCOPIO`, `LP`, `D1`, `D2`, `D3`, `D4`, `D5`, `D6`, `D7`, `PHJE`, `PHDES`, `NOVEDAD`, `SEDE`, `OPCIONAL1`) VALUES ('" + col5 + "','" + col4 + "','" + col2 + "','" + col3 + "','" + col6 + "','" + col7 + "','" + col8 + "','" + col9 + "','" + col10 + "','" + col11 + "','" + col12 + "','" + col13 + "','" + col14 + "','" + col15 + "','" "','SEDE1','" "')";
-//---------------------------------------------------------------------Fin muestra de insert Basico
 MySQL_Connection conn((Client *)&client);
 MySQL_Query *query_mem;
 
@@ -59,24 +55,90 @@ void setup()
 
 void loop(){
   if (Serial.available() > 0) {              //if (UNO.available() > 0){
-    Connect();
+    interpretIncome();
     delay(50);
   }
 }
 
-void Connect()
-{
+void interpretIncome(){
+  String controlYDato = Serial.readStringUntil(',');
+  if (controlYDato == "-E") {
+    Connect();
+  }else{
+    int separador = controlYDato.indexOf('-');
+    char control = controlYDato.charAt(separador - 1);
+    String dato = controlYDato;
+    switch (control) {
+      case 'A':
+        dato.replace("A-", "");
+        fec = dato ;
+        break;
+      case 'B':
+        dato.replace("B-", "");
+        hor = dato;
+        break;
+      case 'C':
+        dato.replace("C-", "");
+        enc = dato;
+        break;
+      case 'D':
+        dato.replace("D-", "");
+        equ = dato;
+        break;
+      case 'E':
+        dato.replace("E-", "");
+        lim = dato;
+        break;
+      case 'F':
+        dato.replace("F-", "");
+        d1 = dato;
+        break;
+      case 'G':
+        dato.replace("G-", "");
+        d2 = dato;
+        break;
+      case 'H':
+        dato.replace("H-", "");
+        d3 = dato;
+        break;
+      case 'I':
+        dato.replace("I-", "");
+        d4 = dato;
+        break;
+      case 'J':
+        dato.replace("J-", "");
+        d5 = dato;
+        break;
+      case 'K':
+        dato.replace("K-", "");
+        d6 = dato;
+        break;
+      case 'L':
+        dato.replace("L-", "");
+        d7 = dato;
+        break;
+      case 'M':
+        dato.replace("M-", "");
+        je = dato;
+        break;
+      case 'N':
+        dato.replace("N-", "");
+        des = dato;
+        break;
+    }
+    insertFill();
+  }
+}
+
+void Connect(){
 //---------------------------------------------------------------------Conectar a MySQL
-  if (conn.connectNonBlocking(server, server_port, user, password) != RESULT_FAIL)
-  {
-    Serial.println("CONETADO..................MYSQL");
+  if (conn.connectNonBlocking(server, server_port, user, password) != RESULT_FAIL){
     delay(1000);
     Insert();
     conn.close();
     vaciarSerial();
   } 
-  else 
-  {
+  else{
     MYSQL_DISPLAY("\nConnect failed. Trying again on next iteration.");
     vaciarSerial();
   }
@@ -95,8 +157,7 @@ void Insert(){
       MYSQL_DISPLAY("Data Inserted.");
     }
   }
-  else
-  {
+  else{
     MYSQL_DISPLAY("Disconnected from Server. Can't insert.");
   }
 //---------------------------------------------------------------------Fin ejecutar insert
@@ -104,4 +165,9 @@ void Insert(){
 
 void vaciarSerial(){
   while (Serial.available() > 0)  Serial.read(); 
+}
+
+void insertFill(){
+INSERT_SQL = String("INSERT INTO ") + default_database + "." + default_table 
+                 + " (`FECHA`, `HORA`, `ENCARGADO`, `ENDOSCOPIO`, `LP`, `D1`, `D2`, `D3`, `D4`, `D5`, `D6`, `D7`, `PHJE`, `PHDES`, `NOVEDAD`, `SEDE`, `OPCIONAL1`) VALUES ('" + fec + "','" + hor + "','" + enc + "','" + equ + "','" + lim + "','" + d1 + "','" + d2 + "','" + d3 + "','" + d4 + "','" + d5 + "','" + d6 + "','" + d7 + "','" + je + "','" + des + "','" "','SEDE1','" "')";
 }
