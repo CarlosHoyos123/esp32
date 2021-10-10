@@ -57,24 +57,35 @@ void setup()
   digitalWrite(LED_BUILTIN, LOW);
 }
 
-void loop()
+void loop(){
+  if (Serial.available() > 0) {              //if (UNO.available() > 0){
+    Connect();
+    delay(50);
+  }
+}
+
+void Connect()
 {
+//---------------------------------------------------------------------Conectar a MySQL
   if (conn.connectNonBlocking(server, server_port, user, password) != RESULT_FAIL)
   {
     Serial.println("CONETADO..................MYSQL");
     delay(1000);
-    runInsert();
-    conn.close();                     // close the connection
+    Insert();
+    conn.close();
+    vaciarSerial();
   } 
   else 
   {
     MYSQL_DISPLAY("\nConnect failed. Trying again on next iteration.");
+    vaciarSerial();
   }
-   delay(60000);
+   //delay(60000);
+//---------------------------------------------------------------------Fin conectar a MySQL
 }
 
-void runInsert()
-{
+void Insert(){
+  //---------------------------------------------------------------------Ejecutar insert  
   MySQL_Query query_mem = MySQL_Query(&conn);
 
   if (conn.connected()){
@@ -88,4 +99,9 @@ void runInsert()
   {
     MYSQL_DISPLAY("Disconnected from Server. Can't insert.");
   }
+//---------------------------------------------------------------------Fin ejecutar insert
+}
+
+void vaciarSerial(){
+  while (Serial.available() > 0)  Serial.read(); 
 }
