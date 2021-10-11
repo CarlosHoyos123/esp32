@@ -1,11 +1,19 @@
 #if ! (ESP8266 || ESP32 )
   #error This code is intended to run on the ESP8266/ESP32 platform! Please check your Tools->Board setting
 #endif
+#include <time.h> 
+#include "FS.h"
+#include "SD.h"
+#include "SPI.h"
 #include "Credentials.h"
 #define MYSQL_DEBUG_PORT      Serial
 #define _MYSQL_LOGLEVEL_      1 // Debug Level from 0 to 4
 #include <MySQL_Generic.h>
 #define USING_HOST_NAME     true
+//---------------------------------------------------------------------Time
+long timezone = 1; 
+byte daysavetime = 1;
+//--------------------------------------------------------------------Fin de time
 //---------------------------------------------------------------------hostname
 #if USING_HOST_NAME
   char server[] = "sql176.main-hosting.eu"; // change to your server's hostname/URL
@@ -37,6 +45,7 @@ String INSERT_SQL;
 //---------------------------------------------------------------------Fin variables para almacenar parametros
 MySQL_Connection conn((Client *)&client);
 MySQL_Query *query_mem;
+File historico;
 
 void setup()
 {
@@ -51,6 +60,12 @@ void setup()
     digitalWrite(LED_BUILTIN, LOW);
   }
   digitalWrite(LED_BUILTIN, HIGH);
+  delay(100);
+  if(!SD.begin()){
+    Serial.println("Card Mount Failed");
+  }else{
+    Serial.println("Iniciada");
+  }
 }
 
 void loop(){
@@ -63,6 +78,7 @@ void loop(){
 void interpretIncome(){
   String controlYDato = Serial.readStringUntil(',');
   if (controlYDato == "-E") {
+    insertFill();
     Connect();
   }else{
     int separador = controlYDato.indexOf('-');
@@ -126,20 +142,20 @@ void interpretIncome(){
         des = dato;
         break;
     }
-    insertFill();
   }
 }
 //---------------------------------------------------------------------Conectar a MySQL
 void Connect(){
-  if (conn.connectNonBlocking(server, server_port, user, password) != RESULT_FAIL){
+  if (conn.connectNonBlocking(server, server_port, user, password) != RESULT_FAIL){ 
     delay(1000);
     Insert();
     conn.close();
-    vaciarSerial();
+    appendFile(SD, "/belen historico.txt", INSERT_SQL + " - Enviado\n");
   } 
   else{
-    MYSQL_DISPLAY("\nConnect failed. Trying again on next iteration.");
+    appendFile(SD, "/belen historico.txt", INSERT_SQL + " - No enviado\n");
   }
+  vaciarSerial();
 }
 //---------------------------------------------------------------------Fin conectar a MySQL
 //---------------------------------------------------------------------Ejecutar insert  
@@ -147,18 +163,23 @@ void Insert(){
   MySQL_Query query_mem = MySQL_Query(&conn);
 
   if (conn.connected()){
-    if ( !query_mem.execute(INSERT_SQL.c_str()) ){
-      MYSQL_DISPLAY("Insert error");
-    }else{
-      MYSQL_DISPLAY("Data Inserted.");
-    }
-  }
-  else{
-    MYSQL_DISPLAY("Disconnected from Server. Can't insert.");
+    query_mem.execute(INSERT_SQL.c_str());
+  }else{
+    appendFile(SD, "/belen historico.txt"," - No se pudo insertar\n");
   }
   vaciarSerial();
 }
 //---------------------------------------------------------------------Fin ejecutar insert
+//---------------------------------------------------------------------Insertar en .txt historico
+void appendFile(fs::FS &fs, const char * path, String message){
+    File file = fs.open(path, FILE_APPEND);
+    if(!file){
+        return;
+    }
+    file.print(message);
+    file.close();
+}
+//---------------------------------------------------------------------Fin insertar en .txt historico
 void vaciarSerial(){
   while (Serial.available() > 0)  Serial.read(); 
 }
@@ -166,6 +187,7 @@ void vaciarSerial(){
 void insertFill(){
 INSERT_SQL = String("INSERT INTO ") + default_database + "." + default_table 
                  + " (`FECHA`, `HORA`, `ENCARGADO`, `ENDOSCOPIO`, `LP`, `D1`, `D2`, `D3`, `D4`, `D5`, `D6`, `D7`, `PHJE`, `PHDES`, `NOVEDAD`, `SEDE`, `OPCIONAL1`) VALUES ('" + fec + "','" + hor + "','" + enc + "','" + equ + "','" + lim + "','" + d1 + "','" + d2 + "','" + d3 + "','" + d4 + "','" + d5 + "','" + d6 + "','" + d7 + "','" + je + "','" + des + "','" "','SEDE1','" "')";
+appendFile(SD, "/belen historico.txt", INSERT_SQL);
 }
 
 void vaciarStructure(){
@@ -183,4 +205,13 @@ void vaciarStructure(){
   String  d7 = "";
   String  je = "";
   String  des = "";
+}
+
+void timeServer(){
+  configTime(3600*timezone, daysavetime*3600, "time.nist.gov", "0.pool.ntp.org", "1.pool.ntp.org");
+  struct tm tmstruct ;
+  tmstruct.tm_year = 0;
+  getLocalTime(&tmstruct, 5000);
+  Serial.printf("\nNow is : %d-%02d-%02d %02d:%02d:%02d\n",(tmstruct.tm_year)+1900,( tmstruct.tm_mon)+1, tmstruct.tm_mday,(tmstruct.tm_hour)-7 , tmstruct.tm_min, tmstruct.tm_sec);
+  while (Serial.available() > 0)  Serial.read(); 
 }
